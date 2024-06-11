@@ -1,21 +1,21 @@
 import { NextFunction, Request, Response } from 'express';
 import AuthService from '../auth/auth-service';
+import authRouter from "../auth/auth-router";
 
 const authService = new AuthService();
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).json({ message: 'Authorization header missing' });
-  }
-
-  const token = authHeader.split(' ')[1];
+    (req as any).location = null
+  }else{
+  const token = authHeader.split(' ')[0];
   const payload = authService.verifyJwt(token);
 
   if (!payload) {
-    return res.status(401).json({ message: 'Invalid or expired token' });
-  }
-
-  (req as any).user = payload;
+    (req as any).location = null
+  }else {
+    (req as any).location = payload.location;
+  }}
   next();
 };

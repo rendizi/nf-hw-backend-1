@@ -12,18 +12,52 @@ class EventService {
       return await EventModel.findById(id).exec();
     }
 
-    async getEvents(): Promise<IEvent[]> {
-      return await EventModel.find().exec(); 
+    async getEvents(location: string|null, page: number, limit: number, sortingType: string, desc: boolean): Promise<IEvent[]> {
+        let sortOptions: any = {};
+
+        if (sortingType) {
+            sortOptions[sortingType] = desc ? -1 : 1;
+        }
+
+        if (location){
+            if (sortingType === "rating"){
+                return await EventModel.find({location:location})
+                    .sort(sortOptions)
+                    .limit(limit)
+                    .skip((page - 1) * limit)
+                    .exec();
+            }else{
+                return await EventModel.find({location:location})
+                    .limit(limit)
+                    .skip((page - 1) * limit)
+                    .exec();
+            }
+        }else{
+            if (sortingType === "rating"){
+                return await EventModel.find()
+                    .sort(sortOptions)
+                    .limit(limit)
+                    .skip((page - 1) * limit)
+                    .exec();
+            }else{
+                return await EventModel.find()
+                    .limit(limit)
+                    .skip((page - 1) * limit)
+                    .exec();
+            }
+        }
     }
 
+
     async createEvent(createEventDto: CreateEventDto): Promise<IEvent> {
-      const { name, description, date, location ,duration} = createEventDto;
+      const { name, description, date, location ,duration, rating} = createEventDto;
       const newEvent = new EventModel({
         name,
         description,
         date: new Date(date),
         location,
-        duration
+        duration,
+          rating
       });
   
       await newEvent.save();

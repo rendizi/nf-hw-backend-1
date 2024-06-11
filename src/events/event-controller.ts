@@ -5,7 +5,6 @@ import EventService from './event-service';
 class EventController {
     private eventService : EventService;
 
-
     constructor(eventService : EventService){
         this.eventService = eventService;
     }
@@ -20,19 +19,23 @@ class EventController {
         }
       }
 
-
-
     getEvents = async (req: Request, res: Response): Promise<void> => {
         try {
-          const events = await this.eventService.getEvents();
-          res.status(200).json(events);
+            const location: string|null = (req as any).location || null;
+            const page: number = parseInt(req.query.page as string) || 1
+            const limit: number = parseInt(req.query.limit as string) || 10
+            const sortingType: string = req.query.sortBy as string
+            const sortDirection: string = req.query.sortDirection as string || 'asc'
+            let desc:boolean = false
+            if (sortDirection === "desc"){
+                desc = true
+            }
+            const events = await this.eventService.getEvents(location, page, limit, sortingType, desc);
+            res.status(200).json(events);
         } catch (error: any) {
-          res.status(500).send({ error: error.message });
+            res.status(500).send({ error: error.message });
         }
       }
-
-    
-
 
     getEventById = async (req: Request, res: Response): Promise<void> => {
         try {
